@@ -11,7 +11,7 @@ def init():
     loaded_model = tensorflow.keras.models.model_from_json(loaded_model_json)
     # load weights into new model
 
-    loaded_model.load_weights(os.getcwd()+'/model/'+"model.h5")
+    loaded_model.load_weights("/storage/best_model_2input.h5")
     print("Loaded Model from disk")
 
     # compile and evaluate loaded model
