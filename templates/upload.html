@@ -1,0 +1,84 @@
+
+<!DOCTYPE html> 
+  
+<html> 
+  
+<head> 
+    <link class="jsbin" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/base/jquery-ui.css"
+        rel="stylesheet" type="text/css" /> 
+    <script class="jsbin" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script> 
+    <script class="jsbin" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/jquery-ui.min.js"></script> 
+    <meta charset=utf-8 /> 
+  
+    <script src="{{ url_for('static', filename='upload.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  
+    <style>
+        article,
+        aside,
+        figure,
+        footer,
+        header,
+        hgroup,
+        menu,
+        nav,
+        section {
+            display: block;
+        }
+    </style>
+</head> 
+  
+<body>
+<!--     <div class="wrapper-class">-->
+        <h1>Pediatric Bone Age Prediction using ML</h1>
+
+        <h3>Upload child hand radiography:</h3>
+        <form action="http://127.0.0.1:5000/uploader" method="POST" enctype="multipart/form-data">
+            <input type='file' name='file' onchange="readURL(this);" />
+            <img id="blah" src="#" alt="your image" />
+
+            <div >
+              <table>
+                <tbody>
+                  <tr>
+                    <td><strong>Please select gender:</strong></td>
+                    <td><input type="radio" name="gender" id="male" value="male" checked></td>
+                    <td>Male</td>
+                    <td><input type="radio" name="gender" id="female" value="female"></td>
+                    <td>Female</td>
+
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+           <div >
+              <table>
+                <tbody>
+                  <tr>
+                    <td><strong>Original/Pre-processed Image?:</strong></td>
+                    <td><input type="radio" name="pre-process" id="original" value="original" checked></td>
+                    <td>Original</td>
+                    <td><input type="radio" name="pre-process" id="pre-processed" value="pre-processed"></td>
+                    <td>Pre-processed</td>
+
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+<!--            <p>Please select gender:</p>-->
+<!--            <label for="male">-->
+<!--            <input type="radio" id="male" name="gender" value="male">-->
+<!--            Male</label>-->
+<!--            <input type="radio" id="female" name="gender" value="female"><label for="female">Female</label>-->
+
+            <button type="submit">Submit & predict</button>
+
+        </form>
+        <br>
+        <br>
+        {{prediction_text}}
+<!--    </div>-->
+</body>
+  
+</html> 
