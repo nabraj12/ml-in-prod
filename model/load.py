@@ -2,7 +2,7 @@ import tensorflow
 import os
 
 def init():
-    json_file = open(os.getcwd()+'/model/'+'model.json','r')
+    json_file = open('/storage/upload/model.json','r')
     loaded_model_json = json_file.read()
     json_file.close()
 
@@ -11,7 +11,7 @@ def init():
     loaded_model = tensorflow.keras.models.model_from_json(loaded_model_json)
     # load weights into new model
 
-    loaded_model.load_weights("/storage/model.h5")
+    loaded_model.load_weights("/storage/upload/model.h5")
     print("Loaded Model from disk")
 
     # compile and evaluate loaded model
