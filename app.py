@@ -17,7 +17,7 @@ model = init()
 
 mean_age = 127.32431789340102
 std_age = 41.18136765542683
-full_path = 'uploaded/image/'
+full_path = '/storage/upload'
 
 app = Flask(__name__)
 
