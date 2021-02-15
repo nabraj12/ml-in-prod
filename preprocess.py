@@ -16,7 +16,6 @@ def image_segmentain(img_flat):
       is assigned for corresponding labels"""
 
     kmeans_centers = kmeans.cluster_centers_[kmeans.labels_]
-
     return kmeans_centers.flatten()
 
 
@@ -30,27 +29,23 @@ def image_mask(kmeans_labels, img_gray_orig):
     if (np.sum(kmeans_labels_arr == sort_labels[0])) > 8000:
         just_bone = np.where(kmeans_labels_arr == sort_labels[0])
         mask_img[just_bone] = 1
-    #         print('test1')
 
     if (np.sum(kmeans_labels_arr == sort_labels[1])) > 8000 and (np.sum(kmeans_labels_arr == sort_labels[1])) < 60000:
         just_bone = np.where(kmeans_labels_arr == sort_labels[1])
         mask_img[just_bone] = 1
-    #         print('test2')
+
     if (np.sum(kmeans_labels_arr == sort_labels[2])) > 8000 and (np.sum(kmeans_labels_arr == sort_labels[2])) < 70000:
         just_bone = np.where(kmeans_labels_arr == sort_labels[2])
         mask_img[just_bone] = 1
-    #         print('test3')
+
     if (np.sum(kmeans_labels_arr == sort_labels[3])) > 8000 and (np.sum(kmeans_labels_arr == sort_labels[3])) < 70000:
         just_bone = np.where(kmeans_labels_arr == sort_labels[3])
         mask_img[just_bone] = 1
-    #         print('test4')
+
     if not just_bone:
         just_bone = np.where(kmeans_labels_arr == sort_labels[1])
         mask_img[just_bone] = 1
-    #     print('test4')
 
-    #   plt.imshow(mask_img)
-    #   plt.show()
     return just_bone, mask_img
 
 
@@ -86,9 +81,6 @@ def img_pad_resize(img_just_bone, image_size):
     img_bone_square = np.pad(img_just_bone, ((top, bottom), (left, right)), 'constant')
 
     img_bone = img_resize(img_bone_square, image_size)
-
-    #   plt.imshow(img_bone)
-    #   plt.show()
 
     return img_bone
 

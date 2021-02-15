@@ -1,6 +1,4 @@
-#environment "mplprd"
 from flask import Flask, render_template, request
-# from werkzeug import secure_filename
 from werkzeug.utils import secure_filename
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 import tensorflow
@@ -59,9 +57,7 @@ def upload_file():
         f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
         val = finds(secure_filename(f.filename), gender_pre_process)
         return render_template('upload.html', prediction_text='Predicted age in month:- {}'.format(val))
-        # return render_template('pred.html', ss=val)
-
-
+        
 if __name__ == '__main__':
 
     app.run(debug=True, port=8000, host='0.0.0.0')
