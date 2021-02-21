@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>preprocess &#8212; ml 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for preprocess</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Import required modules=====================</span>
+<span class="kn">from</span> <span class="nn">skimage.color</span> <span class="kn">import</span> <span class="n">rgb2gray</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">timeit</span>
+<span class="c1">#============================================</span>
+
+<div class="viewcode-block" id="image_segmentain"><a class="viewcode-back" href="../preprocess.html#preprocess.image_segmentain">[docs]</a><span class="k">def</span> <span class="nf">image_segmentain</span><span class="p">(</span><span class="n">img_flat</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :return clusters&#39; center using Kmeans clustering.</span>
+
+<span class="sd">    :param name: flat image</span>
+
+<span class="sd">    :param type: 1D array</span>
+<span class="sd">    </span>
+<span class="sd">    :return: clusters&#39; center</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">n_clusters</span> <span class="o">=</span> <span class="mi">6</span>
+    <span class="n">kmeans</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">n_clusters</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">img_flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="sd">&quot;&quot;&quot;Kmeans lables had issue with masking so center of each cluster</span>
+<span class="sd">      is assigned for corresponding labels&quot;&quot;&quot;</span>
+
+    <span class="n">kmeans_centers</span> <span class="o">=</span> <span class="n">kmeans</span><span class="o">.</span><span class="n">cluster_centers_</span><span class="p">[</span><span class="n">kmeans</span><span class="o">.</span><span class="n">labels_</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">kmeans_centers</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="image_mask"><a class="viewcode-back" href="../preprocess.html#preprocess.image_mask">[docs]</a><span class="k">def</span> <span class="nf">image_mask</span><span class="p">(</span><span class="n">kmeans_labels</span><span class="p">,</span> <span class="n">img_gray_orig</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :generate mask image based on clustering.</span>
+
+<span class="sd">    :param name: clusters&#39; center &amp; orinal image (gray scale)</span>
+
+<span class="sd">    :param type: list &amp; 2D array</span>
+<span class="sd">    </span>
+<span class="sd">    :return: bone image &amp; mask image</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mask_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">img_gray_orig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">img_gray_orig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">kmeans_labels_arr</span> <span class="o">=</span> <span class="n">kmeans_labels</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">img_gray_orig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">img_gray_orig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">sort_labels</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">kmeans_labels</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">(),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">just_bone</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">kmeans_labels_arr</span> <span class="o">==</span> <span class="n">sort_labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="mi">8000</span><span class="p">:</span>
+        <span class="n">just_bone</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">kmeans_labels_arr</span> <span class="o">==</span> <span class="n">sort_labels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">mask_img</span><span class="p">[</span><span class="n">just_bone</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">kmeans_labels_arr</span> <span class="o">==</span> <span class="n">sort_labels</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="mi">8000</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">kmeans_labels_arr</span> <span class="o">==</span> <span class="n">sort_labels</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">&lt;</span> <span class="mi">60000</span><span class="p">:</span>
+        <span class="n">just_bone</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">kmeans_labels_arr</span> <span class="o">==</span> <span class="n">sort_labels</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">mask_img</span><span class="p">[</span><span class="n">just_bone</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">kmeans_labels_arr</span> <span class="o">==</span> <span class="n">sort_labels</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="mi">8000</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">kmeans_labels_arr</span> <span class="o">==</span> <span class="n">sort_labels</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span> <span class="o">&lt;</span> <span class="mi">70000</span><span class="p">:</span>
+        <span class="n">just_bone</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">kmeans_labels_arr</span> <span class="o">==</span> <span class="n">sort_labels</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">mask_img</span><span class="p">[</span><span class="n">just_bone</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">kmeans_labels_arr</span> <span class="o">==</span> <span class="n">sort_labels</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="mi">8000</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">kmeans_labels_arr</span> <span class="o">==</span> <span class="n">sort_labels</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span> <span class="o">&lt;</span> <span class="mi">70000</span><span class="p">:</span>
+        <span class="n">just_bone</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">kmeans_labels_arr</span> <span class="o">==</span> <span class="n">sort_labels</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">mask_img</span><span class="p">[</span><span class="n">just_bone</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">just_bone</span><span class="p">:</span>
+        <span class="n">just_bone</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">kmeans_labels_arr</span> <span class="o">==</span> <span class="n">sort_labels</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">mask_img</span><span class="p">[</span><span class="n">just_bone</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">just_bone</span><span class="p">,</span> <span class="n">mask_img</span></div>
+
+
+<div class="viewcode-block" id="img_resize"><a class="viewcode-back" href="../preprocess.html#preprocess.img_resize">[docs]</a><span class="k">def</span> <span class="nf">img_resize</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">img_height</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :return resized image</span>
+
+<span class="sd">    :param name: image &amp; intended image height</span>
+
+<span class="sd">    :param type: 2D array &amp; int</span>
+<span class="sd">    </span>
+<span class="sd">    :return: resized image</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">img_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">img_height</span> <span class="o">*</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">img_pil</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>  <span class="c1"># convert array back to image</span>
+
+    <span class="n">img_pil_resize</span> <span class="o">=</span> <span class="n">img_pil</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">img_width</span><span class="p">,</span> <span class="n">img_height</span><span class="p">),</span> <span class="n">Image</span><span class="o">.</span><span class="n">LANCZOS</span><span class="p">)</span>  <span class="c1"># resize</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img_pil_resize</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="img_pad_resize"><a class="viewcode-back" href="../preprocess.html#preprocess.img_pad_resize">[docs]</a><span class="k">def</span> <span class="nf">img_pad_resize</span><span class="p">(</span><span class="n">img_just_bone</span><span class="p">,</span> <span class="n">image_size</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :return resized sqaure image</span>
+
+<span class="sd">    :param name: image &amp; final size </span>
+
+<span class="sd">    :param type: 2D array &amp; int (one dimension)</span>
+<span class="sd">    </span>
+<span class="sd">    :return: resized square image (2D)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">size_diff</span> <span class="o">=</span> <span class="n">img_just_bone</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">img_just_bone</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">size_diff</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># hieght is longer than width</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">size_diff</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">size_diff</span><span class="p">)</span> <span class="o">-</span> <span class="n">left</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">size_diff</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># hieght is shorter than width</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">size_diff</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">)</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">size_diff</span><span class="p">)</span> <span class="o">-</span> <span class="n">top</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">img_bone_square</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">img_just_bone</span><span class="p">,</span> <span class="p">((</span><span class="n">top</span><span class="p">,</span> <span class="n">bottom</span><span class="p">),</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)),</span> <span class="s1">&#39;constant&#39;</span><span class="p">)</span>
+
+    <span class="n">img_bone</span> <span class="o">=</span> <span class="n">img_resize</span><span class="p">(</span><span class="n">img_bone_square</span><span class="p">,</span> <span class="n">image_size</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">img_bone</span></div>
+
+
+<div class="viewcode-block" id="img_preprocess_core"><a class="viewcode-back" href="../preprocess.html#preprocess.img_preprocess_core">[docs]</a><span class="k">def</span> <span class="nf">img_preprocess_core</span><span class="p">(</span><span class="n">img_gray_orig</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :return bone image</span>
+
+<span class="sd">    :param name: 2D image (gray scale) </span>
+
+<span class="sd">    :param type: 2D array</span>
+<span class="sd">    </span>
+<span class="sd">    :return: bone image (2D)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">img_flat</span> <span class="o">=</span> <span class="n">img_gray_orig</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">img_gray_orig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">img_gray_orig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">kmeans_labels</span> <span class="o">=</span> <span class="n">image_segmentain</span><span class="p">(</span><span class="n">img_flat</span><span class="p">)</span>
+
+    <span class="n">kmeans_labels_arr</span> <span class="o">=</span> <span class="n">kmeans_labels</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">img_gray_orig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">img_gray_orig</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">just_bone</span><span class="p">,</span> <span class="n">mask_img</span> <span class="o">=</span> <span class="n">image_mask</span><span class="p">(</span><span class="n">kmeans_labels</span><span class="p">,</span> <span class="n">img_gray_orig</span><span class="p">)</span>
+
+    <span class="n">img_clean_background</span> <span class="o">=</span> <span class="n">mask_img</span> <span class="o">*</span> <span class="n">img_gray_orig</span>
+
+    <span class="n">img_just_bone</span> <span class="o">=</span> <span class="n">img_clean_background</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">just_bone</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span><span class="nb">max</span><span class="p">(</span><span class="n">just_bone</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> \
+                    <span class="nb">min</span><span class="p">(</span><span class="n">just_bone</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span><span class="nb">max</span><span class="p">(</span><span class="n">just_bone</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+    <span class="k">return</span> <span class="n">img_just_bone</span></div>
+
+
+<div class="viewcode-block" id="img_preprocessing"><a class="viewcode-back" href="../preprocess.html#preprocess.img_preprocessing">[docs]</a><span class="k">def</span> <span class="nf">img_preprocessing</span><span class="p">(</span><span class="n">img_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">pre_filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    :save and retrun preprocessed image</span>
+
+<span class="sd">    :param name: directory to read and save image, </span>
+<span class="sd">                 filename to be preprocessed</span>
+<span class="sd">                 filename to be saved after preprocessing is done </span>
+
+<span class="sd">    :param type: str, str, str</span>
+<span class="sd">    </span>
+<span class="sd">    :return: preprocessed image</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">image_size</span> <span class="o">=</span> <span class="mi">256</span>
+    <span class="n">save_path_filename</span> <span class="o">=</span> <span class="n">img_path</span> <span class="o">+</span> <span class="n">pre_filename</span>
+
+    <span class="n">image</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">img_path</span> <span class="o">+</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="n">img_gray_orig_0</span> <span class="o">=</span> <span class="n">rgb2gray</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+    <span class="c1">#     plt.imshow(img_gray_orig_0)</span>
+    <span class="c1">#     plt.show()</span>
+    <span class="n">img_gray_orig</span> <span class="o">=</span> <span class="n">img_resize</span><span class="p">(</span><span class="n">img_gray_orig_0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">image_size</span><span class="p">)</span>
+
+    <span class="n">img_just_bone</span> <span class="o">=</span> <span class="n">img_preprocess_core</span><span class="p">(</span><span class="n">img_gray_orig</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">img_bone</span> <span class="o">=</span> <span class="n">img_pad_resize</span><span class="p">(</span><span class="n">img_just_bone</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">image_size</span><span class="p">)</span>
+        <span class="c1"># Second iteration of image segmentation</span>
+        <span class="n">img_just_bone</span> <span class="o">=</span> <span class="n">img_preprocess_core</span><span class="p">(</span><span class="n">img_bone</span><span class="p">)</span>
+        <span class="n">img_bone</span> <span class="o">=</span> <span class="n">img_pad_resize</span><span class="p">(</span><span class="n">img_just_bone</span><span class="p">,</span> <span class="n">image_size</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">save_path_filename</span><span class="p">,</span> <span class="n">img_bone</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">img_bone</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">ml</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../app.html">app module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preprocess.html">preprocess module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Nabraj Sapkota.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

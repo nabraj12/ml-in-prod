@@ -1,11 +1,26 @@
 # ml-in-prod
+
+## Cloud Application:
+
+	* visti site:http://jsa4qu3jfo40nn.gradient.paperspace.com:8000
+
+	* Upload image
+
+	* Select gender
+
+	* Select orginal/preprocessed image
+
+	* Hit 'submit & predic' button
+
+	*Note: Server may not be up running all the time.
+
 ## Installation:
 
 	* Clone github repo
 
 	* Install requirements from terminal-pip insall -r "requiremets.txt"
 
-## Usages:
+## Usages (Local Machine):
 
 	* To run the code in the local computer, the update updates are required
 
@@ -21,16 +36,18 @@
 
 			app.run(debug=True, port=8000, host='0.0.0.0') to app.run()
 
-		* /model folder:
+		* /model:
 
-			Place model.json and model.h5
+			Place model.json and model.h5 in the 'model'folder
 
 	* Run python app.py
 
-	* Go to http://127.0.0.1:5000/ for local deloyment
+	* Go to http://127.0.0.1:5000/ for local deployment
 
 	* Upload image
 
 	* Select gender
-	
+
 	* Select orginal/preprocessed image
+
+	* Hit 'submit & predic' button

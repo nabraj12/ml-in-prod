@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>preprocess module &#8212; ml 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="app module" href="app.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-preprocess">
+<span id="preprocess-module"></span><h1>preprocess module<a class="headerlink" href="#module-preprocess" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="preprocess.image_mask">
+<code class="sig-prename descclassname">preprocess.</code><code class="sig-name descname">image_mask</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kmeans_labels</span></em>, <em class="sig-param"><span class="n">img_gray_orig</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/preprocess.html#image_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#preprocess.image_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>:generate mask image based on clustering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – clusters’ center &amp; orinal image (gray scale)</p></li>
+<li><p><strong>type</strong> – list &amp; 2D array</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bone image &amp; mask image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="preprocess.image_segmentain">
+<code class="sig-prename descclassname">preprocess.</code><code class="sig-name descname">image_segmentain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img_flat</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/preprocess.html#image_segmentain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#preprocess.image_segmentain" title="Permalink to this definition">¶</a></dt>
+<dd><p>:return clusters’ center using Kmeans clustering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – flat image</p></li>
+<li><p><strong>type</strong> – 1D array</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>clusters’ center</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="preprocess.img_pad_resize">
+<code class="sig-prename descclassname">preprocess.</code><code class="sig-name descname">img_pad_resize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img_just_bone</span></em>, <em class="sig-param"><span class="n">image_size</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/preprocess.html#img_pad_resize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#preprocess.img_pad_resize" title="Permalink to this definition">¶</a></dt>
+<dd><p>:return resized sqaure image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – image &amp; final size</p></li>
+<li><p><strong>type</strong> – 2D array &amp; int (one dimension)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>resized square image (2D)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="preprocess.img_preprocess_core">
+<code class="sig-prename descclassname">preprocess.</code><code class="sig-name descname">img_preprocess_core</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img_gray_orig</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/preprocess.html#img_preprocess_core"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#preprocess.img_preprocess_core" title="Permalink to this definition">¶</a></dt>
+<dd><p>:return bone image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – 2D image (gray scale)</p></li>
+<li><p><strong>type</strong> – 2D array</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bone image (2D)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="preprocess.img_preprocessing">
+<code class="sig-prename descclassname">preprocess.</code><code class="sig-name descname">img_preprocessing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img_path</span></em>, <em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">pre_filename</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/preprocess.html#img_preprocessing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#preprocess.img_preprocessing" title="Permalink to this definition">¶</a></dt>
+<dd><p>:save and retrun preprocessed image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – directory to read and save image,
+filename to be preprocessed
+filename to be saved after preprocessing is done</p></li>
+<li><p><strong>type</strong> – str, str, str</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>preprocessed image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="preprocess.img_resize">
+<code class="sig-prename descclassname">preprocess.</code><code class="sig-name descname">img_resize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">img</span></em>, <em class="sig-param"><span class="n">img_height</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/preprocess.html#img_resize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#preprocess.img_resize" title="Permalink to this definition">¶</a></dt>
+<dd><p>:return resized image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – image &amp; intended image height</p></li>
+<li><p><strong>type</strong> – 2D array &amp; int</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>resized image</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">ml</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="app.html">app module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">preprocess module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="app.html" title="previous chapter">app module</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Nabraj Sapkota.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/preprocess.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

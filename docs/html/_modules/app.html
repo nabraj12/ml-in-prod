@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>app &#8212; ml 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for app</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span>
+<span class="kn">from</span> <span class="nn">werkzeug.utils</span> <span class="kn">import</span> <span class="n">secure_filename</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.preprocessing.image</span> <span class="kn">import</span> <span class="n">load_img</span><span class="p">,</span> <span class="n">img_to_array</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;./model&quot;</span><span class="p">))</span>
+<span class="kn">from</span> <span class="nn">preprocess</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">load</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">global</span> <span class="n">model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">init</span><span class="p">()</span>
+
+
+<span class="n">mean_age</span> <span class="o">=</span> <span class="mf">127.32431789340102</span>
+<span class="n">std_age</span> <span class="o">=</span> <span class="mf">41.18136765542683</span>
+<span class="n">full_path</span> <span class="o">=</span> <span class="s1">&#39;/storage/upload/&#39;</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;UPLOAD_FOLDER&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">full_path</span>
+
+
+<div class="viewcode-block" id="upload_f"><a class="viewcode-back" href="../app.html#app.upload_f">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">upload_f</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :post predicted age to web sever.</span>
+
+<span class="sd">    :param name: None</span>
+
+<span class="sd">    :param type: None</span>
+<span class="sd">    </span>
+<span class="sd">    :return: generate predicted age from a template</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;upload.html&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="finds"><a class="viewcode-back" href="../app.html#app.finds">[docs]</a><span class="k">def</span> <span class="nf">finds</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">gender_pre_process</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :return a predicted age.</span>
+
+<span class="sd">    :param name: image file name, gender information</span>
+
+<span class="sd">    :param type: str, bool</span>
+
+<span class="sd">    :return: predicted age (float)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="s1">&#39;original&#39;</span> <span class="ow">in</span> <span class="n">gender_pre_process</span><span class="p">:</span>
+        <span class="n">file_name_to_predict</span> <span class="o">=</span> <span class="s1">&#39;pre_&#39;</span> <span class="o">+</span> <span class="n">file_name</span>
+        <span class="n">img_preprocessing</span><span class="p">(</span><span class="n">full_path</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">file_name_to_predict</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">file_name_to_predict</span> <span class="o">=</span> <span class="n">file_name</span>
+
+    <span class="k">if</span> <span class="s1">&#39;male&#39;</span> <span class="ow">in</span> <span class="n">gender_pre_process</span><span class="p">:</span>
+        <span class="n">female</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">female</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
+        
+    <span class="n">img</span> <span class="o">=</span> <span class="n">load_img</span><span class="p">(</span><span class="n">full_path</span> <span class="o">+</span> <span class="n">file_name_to_predict</span><span class="p">,</span> <span class="n">target_size</span><span class="o">=</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">))</span>
+    <span class="n">img_array</span> <span class="o">=</span> <span class="n">img_to_array</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+    <span class="n">img_array</span> <span class="o">=</span> <span class="n">tensorflow</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">img_array</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># Create batch axis</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">mean_age</span> <span class="o">+</span> <span class="n">std_age</span><span class="o">*</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">([</span><span class="n">img_array</span><span class="p">,</span> <span class="n">female</span><span class="p">]))[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="mi">2</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="upload_file"><a class="viewcode-back" href="../app.html#app.upload_file">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/uploader&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">upload_file</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :read image file and gender information, and post predicted age.</span>
+
+<span class="sd">    :param name: None</span>
+
+<span class="sd">    :param type: None</span>
+
+<span class="sd">    :return: html template</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;POST&#39;</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">]</span>
+        <span class="n">gender_pre_process</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="n">gender_pre_process</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">gender_pre_process</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">gender_pre_process</span><span class="p">)</span>
+
+        <span class="n">f</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;UPLOAD_FOLDER&#39;</span><span class="p">],</span> <span class="n">secure_filename</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">filename</span><span class="p">)))</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">finds</span><span class="p">(</span><span class="n">secure_filename</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">filename</span><span class="p">),</span> <span class="n">gender_pre_process</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;upload.html&#39;</span><span class="p">,</span> <span class="n">prediction_text</span><span class="o">=</span><span class="s1">&#39;Predicted age in month:- </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">val</span><span class="p">))</span></div>
+        
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+    <span class="c1"># app.run(debug=True, port=8000, host=&#39;0.0.0.0&#39;)</span>
+  
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">ml</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../app.html">app module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preprocess.html">preprocess module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Nabraj Sapkota.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
